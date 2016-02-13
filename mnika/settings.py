@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from oscar.defaults import *
+from oscar import OSCAR_MAIN_TEMPLATE_DIR
+import oscar
+from penguin.utils import merge_dicts
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,27 +23,40 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(l+xrw8o((b4wz0qizzg*5j2*cfl%k3irh#_gt@nvy7nh!6ov-'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost'
+]
 
+SITE_ID = 1
 
 # Application definition
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
+DJANGO_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.flatpages',
+    'django.contrib.admin'
+
 ]
 
-MIDDLEWARE_CLASSES = [
+OSCAR_DEPENDENCY_APPS = [
+    'compressor',
+    'widget_tweaks',
+]
+
+INSTALLED_APPS = DJANGO_APPS + OSCAR_DEPENDENCY_APPS + oscar.get_core_apps()
+
+
+################### MIDDLEWARES AND BACKENDS ######################
+
+DJANGO_MIDDLEWARES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,12 +67,39 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+OSCAR_MIDDLEWARES = [
+    'oscar.apps.basket.middleware.BasketMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+
+]
+
+MIDDLEWARE_CLASSES = DJANGO_MIDDLEWARES + OSCAR_MIDDLEWARES
+
+
+AUTHENTICATION_BACKENDS = (
+    'oscar.apps.customer.auth_backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+############### TEMPLATES AND URLS ###############
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+
+STATIC_ROOT = 'shop/static'
+STATIC_URL = '/static/'
+
+MEDIA_ROOT = 'shop/media'
+MEDIA_URL = '/media/'
+
+
+
 ROOT_URLCONF = 'mnika.urls'
 
-TEMPLATES = [
-    {
+DJANGO_TEMPLATE = {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -64,24 +108,52 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
-    },
-]
+    }
 
-WSGI_APPLICATION = 'mnika.wsgi.application'
+OSCAR_TEMPLATE = {
+    'DIRS': [
+        OSCAR_MAIN_TEMPLATE_DIR
+    ],
+    'OPTIONS': {
+        'context_processors': [
+                'oscar.apps.search.context_processors.search_form',
+                'oscar.apps.promotions.context_processors.promotions',
+                'oscar.apps.checkout.context_processors.checkout',
+                'oscar.apps.customer.notifications.context_processors.notifications',
+                'oscar.core.context_processors.metadata',
+        ]
+    }
+}
+
+TEMPLATES = [ merge_dicts(OSCAR_TEMPLATE, DJANGO_TEMPLATE) ]
 
 
+
+
+
+################### DATABASES AND SECRETS ######################
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': 'db.sqlite3',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+        'ATOMIC_REQUESTS': True,
     }
 }
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '(l+xrw8o((b4wz0qizzg*5j2*cfl%k3irh#_gt@nvy7nh!6ov-'
 
+
+######################## SECURITY #############################
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -101,6 +173,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+################# SEARCH ##################
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+    },
+}
+
+
+################## INTERNATIONALIZATION ################
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
@@ -116,7 +198,6 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
+################ MAIN START #######################
 
-STATIC_URL = '/static/'
+WSGI_APPLICATION = 'mnika.wsgi.application'

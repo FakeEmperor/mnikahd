@@ -52,8 +52,7 @@ from __future__ import print_function
 
 from PIL import Image
 
-
-class PILDriver(object):
+class PILDriver:
 
     verbose = 0
 
@@ -152,8 +151,7 @@ class PILDriver(object):
         self.push(Image.composite(image1, image2, mask))
 
     def do_merge(self):
-        """usage: merge <string:mode> <image:pic1>
-                        [<image:pic2> [<image:pic3> [<image:pic4>]]]
+        """usage: merge <string:mode> <image:pic1> [<image:pic2> [<image:pic3> [<image:pic4>]]]
 
         Merge top-of stack images in a way described by the mode.
         """
@@ -182,8 +180,7 @@ class PILDriver(object):
         self.dup()
 
     def do_crop(self):
-        """usage: crop <int:left> <int:upper> <int:right> <int:lower>
-                       <image:pic1>
+        """usage: crop <int:left> <int:upper> <int:right> <int:lower> <image:pic1>
 
         Crop and push a rectangular region from the current image.
         """
@@ -245,8 +242,7 @@ class PILDriver(object):
         self.push(image.offset(xoff, yoff))
 
     def do_paste(self):
-        """usage: paste <image:figure> <int:xoffset> <int:yoffset>
-                        <image:ground>
+        """usage: paste <image:figure> <int:xoffset> <int:yoffset> <image:ground>
 
         Paste figure image into ground with upper left at given offsets.
         """
@@ -501,6 +497,10 @@ class PILDriver(object):
 
 if __name__ == '__main__':
     import sys
+    try:
+        import readline
+    except ImportError:
+        pass # not available on all platforms
 
     # If we see command-line arguments, interpret them as a stack state
     # and execute.  Otherwise go interactive.

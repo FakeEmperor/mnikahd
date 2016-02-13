@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="MySQL - mnika_db@db4free.net" uuid="2c2a4025-7e63-40e2-b8a1-e15c815afa7d">
+      <secret-storage>master_key</secret-storage>
+      <user-name>minka_db_admin</user-name>
+    </data-source>
+  </component>
+</project>
